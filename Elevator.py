@@ -47,7 +47,7 @@ class Elevator():
         self.speed = [.1, 1, .1] # time to add for accel, time between floors (at max speed), time to add for decel
 
     #TODO: write this method
-    def move(floor):
+    def move(self, floor):
         """
         Parameters
         ----------
@@ -57,11 +57,11 @@ class Elevator():
         return -1
     
     #TODO: write this method
-    def unload():
+    def unload(self):
         return -1
 
     #TODO: write this method
-    def load(people):
+    def load(self, people):
         """
         Parameters
         ----------
