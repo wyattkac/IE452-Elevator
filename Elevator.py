@@ -1,6 +1,11 @@
+from sortedcontainers import SortedList
 import numpy
 
-class Elevator():
+import Globals
+from Direction import direction
+from Event import event
+
+class elevator():
     """A class used to manage the kinematics of an elevator
 
     Attributes
@@ -17,7 +22,11 @@ class Elevator():
         the current capacity of the elevator (number of people in elevator)
     self.SPEED : double[]
         an array of how long it takes the elevator to move
-        [additional time to accelerate, time at max speed between floors, additional time to decelerate]
+        [additional time to accelerate, time at max speed between floors, additional time to decelerate, time at each floor]
+    self.dir : direction (enum)
+        the direction the elevator is moving in
+    self.people : SortedList([people()])
+        a list of the people currently in the elevator
     
     Methods
     -------
@@ -29,7 +38,7 @@ class Elevator():
         tries to put people in the elevator
     """
 
-    def __init__(self, TOTALFLOORS, TOTALCAP):
+    def __init__(self, TOTALFLOORS, TOTALCAP, name):
         """
         Parameters
         ----------
@@ -38,13 +47,15 @@ class Elevator():
         TOTALCAP : str
             the maximum capacity of the elevator
         """
-        self.TOTALFLOORS = TOTALFLOORS
+        self.name = name
+        self.TOTALFLOORS = TOTALFLOORS-1
         self.currFloor = 0
         self.prevFloor = 0
         self.TOTALCAP = TOTALCAP
         self.currCap = 0
-        #TODO: add people[], buttons[]
-        self.speed = [.1, 1, .1] # time to add for accel, time between floors (at max speed), time to add for decel
+        self.dir = direction.Idle
+        self.people = SortedList()
+        self.speed = [1.5, 2.5, 1.7, 11.4] # time to add for accel, time between floors (at max speed), time to add for decel
 
     #TODO: write this method
     def move(self, floor):
@@ -58,17 +69,28 @@ class Elevator():
     
     #TODO: write this method
     def unload(self):
+
         return -1
 
     #TODO: write this method
-    def load(self, people):
+    def load(self, person):
+        
         """
         Parameters
         ----------
-        people : TODO
+        person : people()
             people to attempt to load into the elevator
         """
-        return -1
-
-E1 = Elevator(10, 5)
-print(E1.TOTALFLOORS)
+        self.people.add(person) #TODO
+        if(self.dir==direction.Idle):
+            if(self.currFloor>person.desFloor):
+                self.dir=direction.Down
+            else:
+                self.dir=direction.Up
+        diffFloor = abs(self.currFloor-person.desFloor)-1
+        travelTime = self.speed[0] + self.speed[1]*diffFloor + self.speed[2]
+        eve = event(Globals.currTime+travelTime, self)
+        
+        Globals.FEL.add(eve)
+        
+        print(self.dir)

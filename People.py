@@ -1,12 +1,7 @@
-from enum import Enum
- 
-class Direction(Enum):
-    """An Enum to define going up or down"""
-    Up = True
-    Down = False
+from Direction import direction
 
 class people():
-    """A class used to manage the kinematics of an elevator
+    """A class used to store information on groups of people
 
     Attributes
     ----------
@@ -16,7 +11,7 @@ class people():
         the current floor the people are on
     self.desFloor : int
         the floor the people want to go to
-    self.dir : enum
+    self.dir : direction (enum)
         the direction the person wants to go
     """
 
@@ -35,8 +30,13 @@ class people():
         self.currFloor = currFloor
         self.desFloor = desFloor
         if(desFloor > currFloor):
-            self.dir = Direction.Up
+            self.dir = direction.Up
         elif(desFloor < currFloor):
-            self.dir = Direction.Down
+            self.dir = direction.Down
         else:
             raise Exception("Error:People:currFloor==desFloor")
+
+    def __lt__(self, other):
+        """Designed to use SortedList to return the lower floor
+        """
+        return self.desFloor < other.desFloor
