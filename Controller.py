@@ -15,13 +15,13 @@ def simpleControl(person):
     """
     if(Globals.elevator1.dir == direction.Idle):
         Globals.elevator1.load(person)
-        print("\tI Put Them In Elevator 1")
+        print("\tAssigned them to Elevator 1")
     elif(Globals.elevator2.dir == direction.Idle):
         Globals.elevator2.load(person)
-        print("\tI Put Them In Elevator 2")
+        print("\tAssigned them to Elevator 2")
     elif(Globals.elevator3.dir == direction.Idle):
         Globals.elevator3.load(person)
-        print("\tI Put Them In Elevator 3")
+        print("\tAssigned them to Elevator 3")
     else:
         eve = event(Globals.currTime+10, person)
         Globals.FEL.add(eve)

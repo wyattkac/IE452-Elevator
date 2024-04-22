@@ -1,9 +1,9 @@
 from sortedcontainers import SortedList
-import numpy
 
 import Globals
 from Direction import direction
 from Event import event
+from People import people
 
 class elevator():
     """A class used to manage the kinematics of an elevator
@@ -14,8 +14,6 @@ class elevator():
         the total number of floors in the building
     self.currFloor : int
         the current floor the elevator is on
-    self.prevFloor : int
-        the floor the elevator previously moved to
     self.TOTALCAP : int
         the maximum capacity of the elevator (max number of people in elevator)
     self.currCap : int
@@ -48,14 +46,16 @@ class elevator():
             the maximum capacity of the elevator
         """
         self.name = name
-        self.TOTALFLOORS = TOTALFLOORS-1
+        self.TOTALFLOORS = TOTALFLOORS
         self.currFloor = 0
-        self.prevFloor = 0
         self.TOTALCAP = TOTALCAP
         self.currCap = 0
         self.dir = direction.Idle
         self.people = SortedList()
         self.speed = [1.5, 2.5, 1.7, 11.4] # time to add for accel, time between floors (at max speed), time to add for decel
+        self.FEL = SortedList()
+        self.floors = SortedList()
+        self.toGoFloor = 0
 
     #TODO: write this method
     def move(self, floor):
@@ -65,12 +65,14 @@ class elevator():
         floor : int
             floor the elevator will move to
         """
-        return -1
-    
-    #TODO: write this method
-    def unload(self):
-
-        return -1
+        print("\tElevator is moving")
+        if(self.currFloor==floor):
+            raise Exception("Error:Attempting to move to the same floor!")
+        diffFloor = abs(self.currFloor-floor)-1
+        travelTime = self.speed[0] + self.speed[1]*diffFloor + self.speed[2]
+        eve = event(Globals.currTime+travelTime, self)
+        Globals.FEL.add(eve)
+        self.toGoFloor = floor
 
     #TODO: write this method
     def load(self, person):
@@ -81,16 +83,81 @@ class elevator():
         person : people()
             people to attempt to load into the elevator
         """
-        self.people.add(person) #TODO
-        if(self.dir==direction.Idle):
-            if(self.currFloor>person.desFloor):
-                self.dir=direction.Down
-            else:
-                self.dir=direction.Up
-        diffFloor = abs(self.currFloor-person.desFloor)-1
-        travelTime = self.speed[0] + self.speed[1]*diffFloor + self.speed[2]
-        eve = event(Globals.currTime+travelTime, self)
-        
-        Globals.FEL.add(eve)
-        
-        print(self.dir)
+        self.floors.add(person.currFloor)
+        self.FEL.add(person)
+        if(self.currFloor>person.currFloor):
+            self.dir=direction.Down
+        else:
+            self.dir=direction.Up
+        self.action()
+    
+    def action(self):
+        self.currFloor = self.toGoFloor # TODO: THIS MUST BE CHANGED TO WORK WELL
+        didSomthing = False
+        # Remove current floor from list of floors to stop at
+        if(self.dir==direction.Up):
+            while(self.floors != SortedList([]) and self.floors[0] == self.currFloor):
+                self.floors.__delitem__(0)
+        if(self.dir==direction.Down):
+            while(self.floors != SortedList([]) and self.floors[-1] == self.currFloor):
+                self.floors.__delitem__(-1)
+        # Start by unloading people that want off
+        if(self.people != SortedList([])):
+            if(self.dir==direction.Up):
+                while(self.people != SortedList([]) and self.people[0].desFloor == self.currFloor):
+                    self.currCap = self.currCap - self.people[0].numPeople
+                    self.people.__delitem__(0)
+                    didSomthing = True
+                    print("\tI unloaded a person")
+            if(self.dir==direction.Down):
+                while(self.people != SortedList([]) and self.people[-1].desFloor == self.currFloor):
+                    self.currCap = self.currCap - self.people[-1].numPeople
+                    self.people.__delitem__(-1)
+                    didSomthing = True
+                    print("\tI unloaded a person")
+        # If people want on, let them on
+
+
+        if(self.FEL != SortedList([])):
+            if(self.dir==direction.Up):
+                while(self.FEL != SortedList([]) and self.FEL[0].currFloor == self.currFloor):
+                    if(self.FEL[0].numPeople+self.currCap > self.TOTALCAP):
+                        break
+                    self.currCap = self.currCap + self.FEL[0].numPeople
+                    self.floors.add(self.FEL[0].desFloor)
+                    if(self.currFloor>self.FEL[0].desFloor):
+                        self.dir=direction.Down
+                    else:
+                        self.dir=direction.Up
+                    self.people.add(self.FEL[0])
+                    self.FEL.__delitem__(0)
+                    didSomthing = True
+                    print("\tI loaded a person")
+            if(self.dir==direction.Down):
+                while(self.FEL != SortedList([]) and self.FEL[-1].currFloor == self.currFloor):
+                    if(self.FEL[0].numPeople+self.currCap > self.TOTALCAP):
+                        break
+                    self.currCap = self.currCap + self.FEL[-1].numPeople
+                    self.floors.add(self.FEL[-1].desFloor)
+                    if(self.currFloor>self.FEL[0].desFloor):
+                        self.dir=direction.Down
+                    else:
+                        self.dir=direction.Up
+                    self.people.add(self.FEL[-1])
+                    self.FEL.__delitem__(-1)
+                    didSomthing = True
+                    print("\tI loaded a person")
+        # If loaded/unloaded people, keep doors open for a time
+        if(didSomthing == True):
+            eve = event(Globals.currTime+self.speed[3], self)
+            Globals.FEL.add(eve)
+        # If didn't load/unload people either move or become idle
+        if(didSomthing == False):
+            # Move if more floors to stop on
+            if(self.floors != SortedList([]) and self.dir==direction.Up):
+                self.move(self.floors[0])
+            if(self.floors != SortedList([]) and self.dir==direction.Down):
+                self.move(self.floors[-1])
+            # If no more floors to stop on, become idle
+            if(self.floors==SortedList([])):
+                self.dir=direction.Idle
