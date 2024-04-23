@@ -56,6 +56,7 @@ def main():
         print("")
         Globals.prevTime = Globals.currTime
         #print(Globals.FEL)
+    return [Globals.objectiveFunc, Globals.waitTime]
 
     #FEL.clear()
     #FEL.add(pep1)
@@ -63,4 +64,19 @@ def main():
     #print(FEL.pop(0).desFloor) # Use 0 to remove lower (when going up), -1 to remove upper (when going down)
     #print(FEL[0].desFloor)
 
-main()
+# Run it many times
+iter = 100
+avgFunc = 0
+avgWait = 0
+for i in range(iter):
+    [Func, Wait] = main()
+    avgFunc = avgFunc+Func
+    avgWait = avgWait+Wait
+    Globals.FEL = SortedList()
+    Globals.prevTime = 0
+    Globals.currTime = 0
+    Globals.objectiveFunc = 0
+    Globals.waitTime = 0
+avgFunc = avgFunc/iter
+avgWait = avgWait/iter/10
+print(avgFunc, avgWait)

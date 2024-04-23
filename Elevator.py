@@ -52,12 +52,11 @@ class elevator():
         self.currCap = 0
         self.dir = direction.Idle
         self.people = SortedList()
-        self.speed = [1.5, 2.5, 1.7, 11.4] # time to add for accel, time between floors (at max speed), time to add for decel
+        self.speed = [2.5, 5, 2.5, 14] # time to add for accel, time between floors (at max speed), time to add for decel
         self.FEL = SortedList()
         self.floors = SortedList()
         self.toGoFloor = 0
 
-    #TODO: write this method
     def move(self, floor):
         """
         Parameters
@@ -70,11 +69,17 @@ class elevator():
             raise Exception("Error:Attempting to move to the same floor!")
         diffFloor = abs(self.currFloor-floor)-1
         travelTime = self.speed[0] + self.speed[1]*diffFloor + self.speed[2]
+        Globals.objectiveFunc = Globals.objectiveFunc + Globals.elevatorMoving*travelTime
         eve = event(Globals.currTime+travelTime, self)
         Globals.FEL.add(eve)
         self.toGoFloor = floor
 
-    #TODO: write this method
+    def tallyWait(self):
+        for i in self.FEL:
+            Globals.objectiveFunc = Globals.objectiveFunc + Globals.peopleWaiting*(Globals.currTime-Globals.prevTime)
+            Globals.waitTime = Globals.waitTime + Globals.currTime-Globals.prevTime
+        Globals.prevTime = Globals.currTime
+
     def load(self, person):
         
         """
@@ -83,6 +88,7 @@ class elevator():
         person : people()
             people to attempt to load into the elevator
         """
+        self.tallyWait()
         self.floors.add(person.currFloor)
         self.FEL.add(person)
         if(self.currFloor>person.currFloor):
@@ -92,6 +98,7 @@ class elevator():
         self.action()
     
     def action(self):
+        self.tallyWait()
         self.currFloor = self.toGoFloor # TODO: THIS MUST BE CHANGED TO WORK WELL
         didSomthing = False
         # Remove current floor from list of floors to stop at
@@ -161,3 +168,5 @@ class elevator():
             # If no more floors to stop on, become idle
             if(self.floors==SortedList([])):
                 self.dir=direction.Idle
+                #if(self.currFloor != Globals.wait):
+                #    self.move(4)

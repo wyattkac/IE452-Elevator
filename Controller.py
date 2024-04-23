@@ -25,4 +25,6 @@ def simpleControl(person):
     else:
         eve = event(Globals.currTime+10, person)
         Globals.FEL.add(eve)
+        Globals.objectiveFunc = Globals.objectiveFunc + Globals.peopleWaiting*10
+        Globals.waitTime = Globals.waitTime + 10
         print("\tThey Have to Wait")

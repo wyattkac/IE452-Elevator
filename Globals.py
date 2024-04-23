@@ -9,3 +9,9 @@ currTime = 0
 elevator1 = None
 elevator2 = None
 elevator3 = None
+
+# Objective Function (For Opt)
+peopleWaiting = -50
+elevatorMoving = -1
+objectiveFunc = 0
+waitTime = 0
