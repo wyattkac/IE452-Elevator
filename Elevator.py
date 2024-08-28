@@ -5,6 +5,7 @@ from Direction import direction
 from Event import event
 from People import people
 
+startFloor = 0
 class elevator():
     """A class used to manage the kinematics of an elevator
 
@@ -46,8 +47,14 @@ class elevator():
             the maximum capacity of the elevator
         """
         self.name = name
+        #if(self.name == 1):
+        #    startFloor = 0
+        #elif(self.name == 2):
+        #    startFloor = 4
+        #elif(self.name == 3):
+        #    startFloor = 9
         self.TOTALFLOORS = TOTALFLOORS
-        self.currFloor = 0
+        self.currFloor = startFloor
         self.TOTALCAP = TOTALCAP
         self.currCap = 0
         self.dir = direction.Idle
@@ -123,8 +130,6 @@ class elevator():
                     didSomthing = True
                     print("\tI unloaded a person")
         # If people want on, let them on
-
-
         if(self.FEL != SortedList([])):
             if(self.dir==direction.Up):
                 while(self.FEL != SortedList([]) and self.FEL[0].currFloor == self.currFloor):
@@ -168,5 +173,5 @@ class elevator():
             # If no more floors to stop on, become idle
             if(self.floors==SortedList([])):
                 self.dir=direction.Idle
-                #if(self.currFloor != Globals.wait):
-                #    self.move(4)
+                #if(self.currFloor != startFloor):
+                #    self.move(startFloor)

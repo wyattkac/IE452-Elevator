@@ -2,7 +2,7 @@ import random
 from sortedcontainers import SortedList
 
 import Globals
-from Controller import simpleControl
+from Controller import simpleControl, stagedControl
 from Elevator import elevator
 from Event import event
 from People import people
@@ -20,6 +20,8 @@ def main():
     count = 10
     for i in range(count):
         rand1 = random.randint(0,9)
+        #if(rand1<9):
+        #    rand1=0
         rand2 = rand1
         while(rand2==rand1):
             rand2 = random.randint(0,9)
@@ -44,6 +46,7 @@ def main():
         # If event is a person, pass them to the controller to assign to an elevator
         if(type(eve.event) is people):
             print("\tI Found A Person")
+            #stagedControl(eve.event)
             simpleControl(eve.event) # Pass the person to the controller
         # If event is an elevator, do elevator stuff
         if(type(eve.event) is elevator):
